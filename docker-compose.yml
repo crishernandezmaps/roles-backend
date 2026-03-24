@@ -1,0 +1,32 @@
+services:
+  roles-db:
+    image: postgis/postgis:16-3.5-alpine
+    container_name: roles-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5435:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-roles}
+      POSTGRES_USER: ${DB_USER:-roles_app}
+      POSTGRES_PASSWORD: ${DB_PASS:?Set DB_PASS in .env}
+    volumes:
+      - roles_pgdata:/var/lib/postgresql/data
+    shm_size: 256mb
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: "4"
+    command: >
+      postgres
+        -c shared_buffers=2GB
+        -c work_mem=64MB
+        -c maintenance_work_mem=512MB
+        -c effective_cache_size=6GB
+        -c max_connections=50
+        -c random_page_cost=1.1
+        -c checkpoint_completion_target=0.9
+        -c listen_addresses=localhost
+
+volumes:
+  roles_pgdata:
